@@ -1,0 +1,306 @@
+-- [[ SG V1: ULTIMATE TACTICAL HUD (FIXED & COMPLETE) ]]
+local players = game:GetService("Players")
+local tcs = game:GetService("TextChatService")
+local rs = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+local lp = players.LocalPlayer
+local playerGui = lp:WaitForChild("PlayerGui")
+
+-- ==================== CONFIG ====================
+local RP_NAME = "👑⚔ SG SPAMMER V4  👑⚔️"
+local RP_BIO  = "ERIC PAPA (NAMASTE)THE OWNER OF RTG SPAMMER🔥" .. 
+
+-- ==================== INTRO (Safe & Fixed) ====================
+task.spawn(function()
+    local introGui = Instance.new("ScreenGui")
+    introGui.Name = "RTG_Intro"
+    introGui.ResetOnSpawn = false
+    introGui.IgnoreGuiInset = true
+    introGui.Parent = playerGui
+
+    local blackBg = Instance.new("Frame")
+    blackBg.Size = UDim2.new(1, 0, 1, 0)
+    blackBg.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    blackBg.BorderSizePixel = 0
+    blackBg.Parent = introGui
+
+    local introText = Instance.new("TextLabel")
+    introText.Size = UDim2.new(1, 0, 0, 60)
+    introText.Position = UDim2.new(0, 0, 0.45, 0)
+    introText.BackgroundTransparency = 1
+    introText.Text = "SG SPAMMER 💀"
+    introText.TextColor3 = Color3.fromRGB(255, 30, 30)
+    introText.TextSize = 36
+    introText.Font = Enum.Font.GothamBold
+    introText.Parent = blackBg
+
+    task.wait(2.5)
+    pcall(function()
+        local tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+        TweenService:Create(introText, tweenInfo, {TextTransparency = 1}):Play()
+        local fadeBg = TweenService:Create(blackBg, tweenInfo, {BackgroundTransparency = 1})
+        fadeBg:Play()
+        task.wait(1)
+    end)
+    introGui:Destroy()
+end)
+
+-- 1. ADMINS
+local ADMINS = {
+    ["ERIC "] = true, ["myth2527"] = true,
+    ["SGJACK"] = true, ["SALMAN"] = true, 
+    ["Khushi"] = true, ["Tmkx"] = true,
+    [lp.Name] = true
+}
+
+local active = false
+local patternStep = 1
+
+-- 2. 50 OBJECTS
+local objects = {"Burger","Pizza","MAGGI","Qatar","Ethiopia","Fridge","Laptop","Toaster","Calculator","Socks","Blender","Microwave","Spoon","Table","Chair","Lamp","Charger","Battery","Mirror","Pencil","Notebook","Glue","Scissors","Ruler","Desk","Monitor","Keyboard","Mouse","Speaker","Remote","Wallet","Keys","Watch","Hat","Jacket","Backpack","Umbrella","Camera","Phone","Tablet","Console","Controller","Headset","Fan","Heater","Blanket","Pillow","Curtain","Rug","Clock"}
+
+-- ==================== ROLEPLAY NAME + BIO (Brookhaven) ====================
+task.spawn(function()
+    local RE = rs:WaitForChild("RE", 10)
+    if not RE then return end
+
+    local NameRemote = RE:FindFirstChild("1RPNam1eTex1t")
+    local ColorRemote = RE:FindFirstChild("1RPNam1eColo1r")
+
+    if NameRemote then
+        for i = 1, 8 do
+            pcall(function()
+                NameRemote:FireServer("RolePlayName", RP_NAME)
+                NameRemote:FireServer("RolePlayBio", RP_BIO)
+            end)
+            task.wait(0.3)
+        end
+    end
+
+    if ColorRemote then
+        while true do
+            local c = Color3.fromHSV((tick() % 5) / 5, 1, 1)
+            pcall(function()
+                ColorRemote:FireServer("PickingRPNameColor", c)
+                ColorRemote:FireServer("PickingRPBioColor", c)
+            end)
+            task.wait(0.08)
+        end
+    end
+end)
+
+-- 3. THE WALL BUILDER
+local function buildWall(msg)
+    local patterns = {"#- #", "@", "*_*"} 
+    local p = patterns[patternStep]
+    local currentText = " " .. msg
+    local remainingSpace = 195 - #currentText
+    local repeatCount = math.floor(remainingSpace / #p)
+    
+    local wall = string.rep(p, repeatCount) .. currentText
+    patternStep = (patternStep >= 3) and 1 or (patternStep + 1)
+    return wall
+end
+
+-- 4. CHAT SENDER
+local function chat(msg)
+    task.spawn(function()
+        local ch = tcs:FindFirstChild("RBXGeneral", true) or (tcs:FindFirstChild("TextChannels") and tcs.TextChannels:FindFirstChild("RBXGeneral"))
+        if ch then ch:SendAsync(msg) end
+        local say = rs:FindFirstChild("SayMessageRequest", true)
+        if say then say:FireServer(msg, "All") end
+    end)
+end
+
+-- 5. COMMAND HANDLER
+local function handleCmd(text, sender)
+    local split = text:lower():split(" ")
+    local cmd = split[1]
+    local arg = split[2]
+    
+    if cmd == "!give" and arg then
+        for _, p in pairs(players:GetPlayers()) do
+            if p.Name:lower():find(arg) then ADMINS[p.Name] = true; chat("GTV V1: Admin Added " .. p.Name) end
+        end
+    elseif cmd == "!start" then active = true
+    elseif cmd == "!stop" then active = false
+    elseif cmd == "!sit" then
+        if lp.Character and lp.Character:FindFirstChild("Humanoid") then lp.Character.Humanoid.Sit = true end
+    elseif cmd == "!kick" and arg then
+        for _, p in pairs(players:GetPlayers()) do
+            if p.Name:lower():find(arg) then chat("SG V1: Attempting to kick " .. p.Name) end
+        end
+    elseif cmd == "!say" and arg then
+        chat(text:sub(6))
+    elseif cmd == "!rj" then
+        game:GetService("TeleportService"):Teleport(game.PlaceId, lp)
+    elseif cmd == "!cmds" then
+        chat("!give, !start, !stop, !sit, !kick, !say, !rj")
+    end
+end
+
+for _, p in pairs(players:GetPlayers()) do p.Chatted:Connect(function(m) if ADMINS[p.Name] then handleCmd(m, p) end end) end
+players.PlayerAdded:Connect(function(p) p.Chatted:Connect(function(m) if ADMINS[p.Name] then handleCmd(m, p) end end) end)
+
+-- ==================== GUI SETUP (FIXED & FULL UI) ====================
+local old = playerGui:FindFirstChild("GTV_V1_UI")
+if old then old:Destroy() end
+
+local sg = Instance.new("ScreenGui", playerGui)
+sg.Name = "GTV_V1_UI"
+sg.ResetOnSpawn = false
+
+local frame = Instance.new("Frame", sg)
+frame.Name = "Frame"
+frame.Size = UDim2.new(0, 360, 0, 260)
+frame.Position = UDim2.new(0.5, -180, 0.4, -130)
+frame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+frame.Active = true
+frame.Draggable = true
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
+
+local stroke = Instance.new("UIStroke", frame)
+stroke.Thickness = 2
+task.spawn(function() 
+    while task.wait(0.05) do 
+        stroke.Color = Color3.fromHSV(tick() % 5 / 5, 0.8, 1) 
+    end 
+end)
+
+-- Title (Crown Style)
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, -50, 0, 40)
+title.Position = UDim2.fromOffset(15, 5)
+title.BackgroundTransparency = 1
+title.Text = "👑⚔ SG SPAMMER V4👑⚔️"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextSize = 13
+title.Font = Enum.Font.GothamBold
+title.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Minimize Button (-)
+local minimizeButton = Instance.new("TextButton", frame)
+minimizeButton.Size = UDim2.fromOffset(30, 28)
+minimizeButton.Position = UDim2.new(1, -38, 0, 8)
+minimizeButton.Text = "-"
+minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+minimizeButton.TextSize = 20
+minimizeButton.Font = Enum.Font.GothamBold
+minimizeButton.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+Instance.new("UICorner", minimizeButton).CornerRadius = UDim.new(0, 6)
+
+-- Minimized Floating Button
+local miniButton = Instance.new("TextButton", sg)
+miniButton.Size = UDim2.new(0, 110, 0, 35)
+miniButton.Position = UDim2.new(0, 15, 0.5, -18)
+miniButton.Text = "👑 RTG PANEL"
+miniButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+miniButton.TextSize = 13
+miniButton.Font = Enum.Font.GothamBold
+miniButton.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+miniButton.Visible = false
+Instance.new("UICorner", miniButton).CornerRadius = UDim.new(0, 8)
+
+local miniStroke = Instance.new("UIStroke", miniButton)
+miniStroke.Thickness = 2
+task.spawn(function() 
+    while task.wait(0.05) do 
+        miniStroke.Color = Color3.fromHSV(tick() % 5 / 5, 0.8, 1) 
+    end 
+end)
+
+minimizeButton.MouseButton1Click:Connect(function()
+    frame.Visible = false
+    miniButton.Visible = true
+end)
+
+miniButton.MouseButton1Click:Connect(function()
+    miniButton.Visible = false
+    frame.Visible = true
+end)
+
+-- Custom Text Box
+local box = Instance.new("TextBox", frame)
+box.Name = "TextBox"
+box.Size = UDim2.new(0.88, 0, 0, 38)
+box.Position = UDim2.new(0.06, 0, 0.20, 0)
+box.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+box.TextColor3 = Color3.new(1, 1, 1)
+box.PlaceholderText = "Enter custom message..."
+box.Text = "Roblox"
+box.Font = Enum.Font.GothamBold
+box.TextSize = 13
+Instance.new("UICorner", box).CornerRadius = UDim.new(0, 6)
+
+-- Delay Input Box
+local delayBox = Instance.new("TextBox", frame)
+delayBox.Name = "DelayBox"
+delayBox.Size = UDim2.new(0.88, 0, 0, 35)
+delayBox.Position = UDim2.new(0.06, 0, 0.39, 0)
+delayBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+delayBox.TextColor3 = Color3.fromRGB(100, 200, 255)
+delayBox.PlaceholderText = "Delay in seconds..."
+delayBox.Text = "1.3"
+delayBox.Font = Enum.Font.GothamBold
+delayBox.TextSize = 13
+Instance.new("UICorner", delayBox).CornerRadius = UDim.new(0, 6)
+
+-- START Button
+local startBtn = Instance.new("TextButton", frame)
+startBtn.Size = UDim2.new(0.42, 0, 0, 40)
+startBtn.Position = UDim2.new(0.06, 0, 0.62, 0)
+startBtn.Text = "START"
+startBtn.Font = Enum.Font.GothamBold
+startBtn.TextColor3 = Color3.new(1, 1, 1)
+startBtn.BackgroundColor3 = Color3.fromRGB(30, 120, 200)
+Instance.new("UICorner", startBtn).CornerRadius = UDim.new(0, 6)
+
+-- STOP Button
+local stopBtn = Instance.new("TextButton", frame)
+stopBtn.Size = UDim2.new(0.42, 0, 0, 40)
+stopBtn.Position = UDim2.new(0.52, 0, 0.62, 0)
+stopBtn.Text = "STOP"
+stopBtn.Font = Enum.Font.GothamBold
+stopBtn.TextColor3 = Color3.new(1, 1, 1)
+stopBtn.BackgroundColor3 = Color3.fromRGB(160, 40, 60)
+Instance.new("UICorner", stopBtn).CornerRadius = UDim.new(0, 6)
+
+startBtn.MouseButton1Click:Connect(function()
+    active = true
+    startBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+end)
+
+stopBtn.MouseButton1Click:Connect(function()
+    active = false
+    startBtn.BackgroundColor3 = Color3.fromRGB(30, 120, 200)
+end)
+
+-- ==================== SPAM LOOP ====================
+task.spawn(function()
+    while true do
+        if active then
+            local ui = playerGui:FindFirstChild("GTV_V1_UI")
+            if ui and ui:FindFirstChild("Frame") then
+                local custom = ui.Frame.TextBox.Text
+                local delayInput = tonumber(ui.Frame.DelayBox.Text) or 1.3
+                local obj = objects[math.random(1, #objects)]
+                
+                local fullText = custom .. " tmkx ma " .. obj
+                chat(buildWall(fullText))
+                
+                if obj == "Clock" then
+                    task.wait(10)
+                else
+                    task.wait(delayInput)
+                end
+            end
+        end
+        task.wait(0.1)
+    end
+end)
+
+print("✅ SG Spammer V4  Fully Fixed & Loaded!")
+
+        
